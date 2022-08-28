@@ -1,3 +1,4 @@
+from time import sleep
 from countTransclusions import countTransclusions
 from listPages import listPages
 import sys
@@ -28,6 +29,8 @@ for page in allpages:
         max_count = count
         max_page = page
 
+    if i % 10 == 0:
+        sleep(1)
     if i % 100 == 0:
         print(f'{i}/{len(allpages)}: {page} ({count})')
     i += 1
