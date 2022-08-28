@@ -16,6 +16,7 @@ server, namespace, template = sys.argv[1:4]
 print('Pobieranie listy stron...')
 
 allpages = listPages(server, namespace)
+allpages = [x for x in allpages if x.endswith('/całość')]
 
 print(f'Znaleziono stron: {len(allpages)}')
 
