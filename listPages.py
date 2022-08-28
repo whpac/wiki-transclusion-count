@@ -1,4 +1,5 @@
 import json
+from time import sleep
 import urllib.parse
 import urllib.request
 
@@ -8,7 +9,12 @@ def listPages(server, namespace):
 
     continue_token = None
     allpages = []
+    i = 0
     while True:
+        i += 1
+        if i % 100 == 0:
+            sleep(1)
+
         if continue_token is not None:
             continue_token = urllib.parse.quote(continue_token)
             apcontinue = f'&apcontinue={continue_token}'
