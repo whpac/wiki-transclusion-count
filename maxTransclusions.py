@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from countTransclusions import countTransclusions, fetchTemplateWikitext
 from listPages import listPages
-from time import sleep
+from time import time
 import requests
 
 argparser = ArgumentParser()
@@ -14,6 +14,7 @@ argparser.add_argument('--output', '-o', metavar='plik', type=str, help='plik wy
 args = argparser.parse_args()
 
 
+start_time = time()
 session = requests.Session()
 
 print('Wczytywanie listy stron...')
@@ -46,11 +47,11 @@ for page in allpages:
     if total > max_counts[TOTAL_KEY][0]:
         max_counts[TOTAL_KEY] = (total, page)
 
-    if i % 10 == 0:
-        sleep(1)
     if i % 100 == 0:
         print(f'{i}/{len(allpages)}')
     i += 1
+
+end_time = time()
 
 print('Zakończono zliczanie')
 print('Maksymalna liczba wystąpień:')
@@ -63,6 +64,7 @@ if len(args.templates) > 1:
     print('\nDla wszystkich szablonów razem wziętych:')
     print(f'{max_counts[TOTAL_KEY][0]}\t({max_counts[TOTAL_KEY][1]})')
 
+print(f'\nCzas wykonania: {round(end_time - start_time)} sekund')
 
 if args.output:
     with open(args.output, 'a') as f:
