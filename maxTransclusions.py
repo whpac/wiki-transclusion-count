@@ -49,14 +49,14 @@ for page in allpages:
     i += 1
 
 print('Zakończono zliczanie')
-print('Maksymalne liczba wystąpień:')
+print('Maksymalna liczba wystąpień:')
 for template, (count, page) in max_counts.items():
     if template == TOTAL_KEY:
         continue
     print(f'{{{{{template}}}}}:\t{count}\t({page})')
 
 if len(args.templates) > 1:
-    print('\Dla wszystkich szablonów razem wziętych:')
+    print('\nDla wszystkich szablonów razem wziętych:')
     print(f'{max_counts[TOTAL_KEY][0]}\t({max_counts[TOTAL_KEY][1]})')
 
 
