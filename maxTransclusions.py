@@ -37,7 +37,7 @@ for page in allpages:
     i += 1
 
 print('Zakończono zliczanie')
-print(f'Maksymalna liczba wystąpień: {max_count}')
+print(f'Maksymalna liczba wystąpień: {max_count} w {max_page}')
 
 with open('output.txt', 'w') as f:
     f.write(f'{max_page} ({max_count})')
