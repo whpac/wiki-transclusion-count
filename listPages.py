@@ -37,11 +37,19 @@ def listPages(server, namespace):
 
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) <= 2:
-        print('Brakujące parametry')
-        print(f'Użycie: {sys.argv[0]} <serwer> <przestrzeń nazw>')
-        print('    serwer           - adres URL serwera wiki')
-        print('    przestrzeń nazw  - numer przestrzeni nazw, w której listować strony')
-        sys.exit(-1)
-    print(listPages(*sys.argv[1:3]))
+    from argparse import ArgumentParser
+
+    argparser = ArgumentParser()
+    argparser.add_argument('server', metavar='serwer', type=str, required=True, help='adres URL serwera wiki')
+    argparser.add_argument('namespace', metavar='przestrzeń_nazw', type=int, required=True, help='numer przestrzeni nazw, z której listować strony')
+    argparser.add_argument('--output', '-o', metavar='plik', type=str, help='plik wyjściowy z wynikami')
+    args = argparser.parse_args()
+    pages = listPages(args.server, args.namespace)
+    
+    if args.output and args.output != '-':
+        with open(args.output, 'w') as f:
+            for page in pages:
+                f.write(page + '\n')
+    else:
+        for page in pages:
+            print(page)
