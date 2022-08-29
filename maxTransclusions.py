@@ -1,43 +1,67 @@
-from time import sleep
+from argparse import ArgumentParser
 from countTransclusions import countTransclusions
 from listPages import listPages
-import sys
+from time import sleep
 
-if len(sys.argv) <= 3:
-    print('Brakujące parametry')
-    print(f'Użycie: {sys.argv[0]} <serwer> <przestrzeń nazw> <szablon>')
-    print('    serwer           - adres URL serwera wiki')
-    print('    przestrzeń nazw  - numer przestrzeni nazw, w której listować strony')
-    print('    szablon          - nazwa szablonu, który ma być zliczany')
-    sys.exit(-1)
+argparser = ArgumentParser()
+argparser.add_argument('server', metavar='serwer', type=str, help='adres URL serwera wiki')
+argparser.add_argument('templates', metavar='szablon', type=str, nargs='+', help='nazwa szablonu, który ma być zliczany')
+group = argparser.add_mutually_exclusive_group(required=True)
+group.add_argument('--namespace', '--ns', '-n', metavar='przestrzeń_nazw', type=int, help='numer przestrzeni nazw, z której listować strony')
+group.add_argument('--pages', '-p', metavar='strony', type=str, help='plik z listą stron, które mają być wzięte pod uwagę')
+argparser.add_argument('--output', '-o', metavar='plik', type=str, help='plik wyjściowy z wynikami')
+args = argparser.parse_args()
 
-server, namespace, template = sys.argv[1:4]
 
-print('Pobieranie listy stron...')
+print('Wczytywanie listy stron...')
+if args.pages:
+    with open(args.pages, 'r') as f:
+        allpages = f.read().splitlines()
+else:
+    allpages = listPages(args.server, args.namespace)
 
-allpages = listPages(server, namespace)
-allpages = [x for x in allpages if x.endswith('/całość')]
+# allpages = [x for x in allpages if x.endswith('/całość')]
 
 print(f'Znaleziono stron: {len(allpages)}')
 
 i = 1
-max_count = -1
-max_page = None
+TOTAL_KEY = '|total'
+max_counts = { x: (-1, None) for x in args.templates }
+max_counts[TOTAL_KEY] = (-1, None)
+
 for page in allpages:
-    count = countTransclusions(server, page, template)
+    total = 0
+    for template in args.templates:
+        count = countTransclusions(args.server, page, template)
+        total += count
     
-    if count > max_count:
-        max_count = count
-        max_page = page
+        if count > max_counts[template][0]:
+            max_counts[template] = (count, page)
+    
+    if total > max_counts[TOTAL_KEY][0]:
+        max_counts[TOTAL_KEY] = (total, page)
 
     if i % 10 == 0:
         sleep(1)
     if i % 100 == 0:
-        print(f'{i}/{len(allpages)}: {page} ({count})')
+        print(f'{i}/{len(allpages)}')
     i += 1
 
 print('Zakończono zliczanie')
-print(f'Maksymalna liczba wystąpień: {max_count} w {max_page}')
+print('Maksymalne liczba wystąpień:')
+for template, (count, page) in max_counts.items():
+    if template == TOTAL_KEY:
+        continue
+    print(f'{{{{{template}}}}}:\t{count}\t({page})')
 
-with open('output.txt', 'w') as f:
-    f.write(f'{max_page} ({max_count})')
+if len(args.templates) > 1:
+    print('\Dla wszystkich szablonów razem wziętych:')
+    print(f'{max_counts[TOTAL_KEY][0]}\t({max_counts[TOTAL_KEY][1]})')
+
+
+if args.output:
+    with open(args.output, 'a') as f:
+        for template, (count, page) in max_counts.items():
+            if template == TOTAL_KEY:
+                template = '(wszystkie)'
+            print(f'{template}:\t{count}\t({page})')
