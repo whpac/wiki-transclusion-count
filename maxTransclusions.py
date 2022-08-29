@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 from countTransclusions import countTransclusions
 from listPages import listPages
 from time import sleep
+import requests
 
 argparser = ArgumentParser()
 argparser.add_argument('server', metavar='serwer', type=str, help='adres URL serwera wiki')
@@ -12,6 +13,8 @@ group.add_argument('--pages', '-p', metavar='strony', type=str, help='plik z lis
 argparser.add_argument('--output', '-o', metavar='plik', type=str, help='plik wyjściowy z wynikami')
 args = argparser.parse_args()
 
+
+session = requests.Session()
 
 print('Wczytywanie listy stron...')
 if args.pages:
@@ -32,7 +35,7 @@ max_counts[TOTAL_KEY] = (-1, None)
 for page in allpages:
     total = 0
     for template in args.templates:
-        count = countTransclusions(args.server, page, template)
+        count = countTransclusions(args.server, page, template, session=session)
         total += count
     
         if count > max_counts[template][0]:

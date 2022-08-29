@@ -1,23 +1,29 @@
-import json
-import urllib.parse
-import urllib.request
+import requests
 
 TEMPLATE_MARKER = '`@!#%@`'
 
-def countTransclusions(server, page, template):
+def countTransclusions(server, page, template, session=None):
     if not server.endswith('.org'):
         server = server + '.org'
+    
+    if not session:
+        session = requests.Session()
 
-    page = urllib.parse.quote(page)
-    template = urllib.parse.quote(template)
-    marker = urllib.parse.quote(TEMPLATE_MARKER)
-    url = rf'https://{server}/w/api.php?action=parse&page={page}&prop=text&templatesandboxtitle=Template:{template}&templatesandboxtext={marker}&disablelimitreport=1&format=json&formatversion=2';
+    payload = {
+        'action': 'parse',
+        'page': page,
+        'prop': 'text',
+        'templatesandboxtitle': f'Template:{template}',
+        'templatesandboxtext': TEMPLATE_MARKER,
+        'disablelimitreport': 1,
+        'format': 'json',
+        'formatversion': 2,
+    }
 
-    with urllib.request.urlopen(url) as f:
-        response = f.read().decode('utf-8')
-        data = json.loads(response)
-        text = data['parse']['text']
-        return text.count(TEMPLATE_MARKER)
+    r = session.get(f'https://{server}/w/api.php', params=payload)
+    data = r.json()
+    text = data['parse']['text']
+    return text.count(TEMPLATE_MARKER)
 
 
 if __name__ == '__main__':
