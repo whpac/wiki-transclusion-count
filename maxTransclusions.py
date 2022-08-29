@@ -65,4 +65,4 @@ if args.output:
         for template, (count, page) in max_counts.items():
             if template == TOTAL_KEY:
                 template = '(wszystkie)'
-            print(f'{template}:\t{count}\t({page})')
+            f.write(f'{template}:\t{count}\t({page})\n')
