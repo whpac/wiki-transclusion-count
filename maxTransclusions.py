@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from countTransclusions import countTransclusions
+from countTransclusions import countTransclusions, fetchTemplateWikitext
 from listPages import listPages
 from time import sleep
 import requests
@@ -30,10 +30,14 @@ TOTAL_KEY = '|total'
 max_counts = { x: (-1, None) for x in args.templates }
 max_counts[TOTAL_KEY] = (-1, None)
 
+template_contents = {}
+for template in args.templates:
+    template_contents[template] = fetchTemplateWikitext(args.server, template, session=session)
+
 for page in allpages:
     total = 0
     for template in args.templates:
-        count = countTransclusions(args.server, page, template, session=session)
+        count = countTransclusions(args.server, page, template, session=session, template_contents=template_contents[template])
         total += count
     
         if count > max_counts[template][0]:
