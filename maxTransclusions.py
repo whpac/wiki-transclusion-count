@@ -18,7 +18,7 @@ session = requests.Session()
 
 print('Wczytywanie listy stron...')
 if args.pages:
-    with open(args.pages, 'r') as f:
+    with open(args.pages, 'r', encoding='utf-8') as f:
         allpages = f.read().splitlines()
 else:
     allpages = listPages(args.server, args.namespace, session=session)
@@ -37,7 +37,7 @@ for template in args.templates:
 for page in allpages:
     total = 0
     for template in args.templates:
-        count = countTransclusions(args.server, page, template, session=session, template_contents=template_contents[template])
+        count = countTransclusions(args.server, page, template, session=session, template_content=template_contents[template])
         total += count
     
         if count > max_counts[template][0]:
