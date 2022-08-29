@@ -1,11 +1,12 @@
-import json
 from time import sleep
-import urllib.parse
-import urllib.request
+import requests
 
-def listPages(server, namespace):
+def listPages(server, namespace, session=None):
     if not server.endswith('.org'):
         server = server + '.org'
+
+    if not session:
+        session = requests.Session()
 
     continue_token = None
     allpages = []
@@ -15,24 +16,24 @@ def listPages(server, namespace):
         if i % 100 == 0:
             sleep(1)
 
-        if continue_token is not None:
-            continue_token = urllib.parse.quote(continue_token)
-            apcontinue = f'&apcontinue={continue_token}'
-        else:
-            apcontinue = ''
-        url = rf'https://{server}/w/api.php?action=query&list=allpages&apnamespace={namespace}&aplimit=max&format=json&formatversion=2' + apcontinue;
+        payload = {
+            'action': 'query',
+            'list': 'allpages',
+            'apnamespace': namespace,
+            'aplimit': 'max',
+            'apcontinue': continue_token,
+            'format': 'json',
+            'formatversion': 2,
+        }
+        r = session.get(f'https://{server}/w/api.php', params=payload)
+        data = r.json()
+        pages = data['query']['allpages']
+        pages = map(lambda page: page['title'], pages)
+        allpages.extend(pages)
 
-        with urllib.request.urlopen(url) as f:
-            response = f.read().decode('utf-8')
-            data = json.loads(response)
-            pages = data['query']['allpages']
-            pages = map(lambda page: page['title'], pages)
-            allpages.extend(pages)
-
-            if 'continue' in data and 'apcontinue' in data['continue']:
-                continue_token = data['continue']['apcontinue']
-            else:
-                break
+        if 'continue' not in data:
+            break
+        continue_token = data['continue']['apcontinue']
     return allpages
 
 

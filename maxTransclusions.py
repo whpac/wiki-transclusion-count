@@ -21,9 +21,7 @@ if args.pages:
     with open(args.pages, 'r') as f:
         allpages = f.read().splitlines()
 else:
-    allpages = listPages(args.server, args.namespace)
-
-# allpages = [x for x in allpages if x.endswith('/całość')]
+    allpages = listPages(args.server, args.namespace, session=session)
 
 print(f'Znaleziono stron: {len(allpages)}')
 
